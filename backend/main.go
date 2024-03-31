@@ -2,22 +2,16 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/gorilla/websocket"
+	"github.com/josephwzx/chatroom/pkg/websocket"
 	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-
-	CheckOrigin: func(r *http.Request) bool { return true },
-}
 
 func initDB() {
 	var err error
@@ -31,51 +25,56 @@ func initDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	websocket.SetDatabaseConnection(db)
 }
 
-func saveMessage(message string, sender string) {
-	_, err := db.Exec("INSERT INTO messages (content, sender) VALUES ($1, $2)", message, sender)
+func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("WebSocket Endpoint Hit")
+	conn, err := websocket.Upgrade(w, r)
 	if err != nil {
-		log.Println("Error saving message:", err)
+		fmt.Fprintf(w, "%+v\n", err)
 	}
+
+	client := &websocket.Client{
+		Conn: conn,
+		Pool: pool,
+	}
+
+	pool.Register <- client
+	client.Read()
 }
 
-func reader(conn *websocket.Conn) {
-	sender := "someSenderIdentifier"
-	for {
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		fmt.Println(string(p))
-
-		saveMessage(string(p), sender)
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
-	}
-}
-
-func serveWs(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Host)
-
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-	}
-
-	reader(ws)
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*") // Adjust accordingly for security in production
 }
 
 func setupRoutes() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Simple Server")
+	pool := websocket.NewPool()
+	go pool.Start()
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(pool, w, r)
 	})
 
-	http.HandleFunc("/ws", serveWs)
+	http.HandleFunc("/history", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("/history endpoint hit") // Debug logging
+		enableCors(&w)
+		history, err := websocket.GetChatHistory()
+		if err != nil {
+			log.Printf("Error retrieving chat history: %v", err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(history); err != nil {
+			log.Printf("Error encoding chat history to JSON: %v", err)
+			http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
+			return
+		}
+	})
+
 }
 
 func main() {

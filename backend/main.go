@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/josephwzx/chatroom/pkg/auth"
 	"github.com/josephwzx/chatroom/pkg/websocket"
 	_ "github.com/lib/pq"
 )
@@ -26,6 +27,7 @@ func initDB() {
 		log.Fatal(err)
 	}
 
+	auth.InitializeAuth(db)
 	websocket.SetDatabaseConnection(db)
 }
 
@@ -49,6 +51,22 @@ func enableCors(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "*") // Adjust accordingly for security in production
 }
 
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Be more specific in production
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+		// Handle preflight requests
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+}
+
 func setupRoutes() {
 	pool := websocket.NewPool()
 	go pool.Start()
@@ -56,6 +74,9 @@ func setupRoutes() {
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(pool, w, r)
 	})
+
+	http.HandleFunc("/login", corsMiddleware(auth.LoginUser))
+	http.HandleFunc("/register", corsMiddleware(auth.RegisterUser))
 
 	http.HandleFunc("/history", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("/history endpoint hit") // Debug logging

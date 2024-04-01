@@ -3,12 +3,17 @@ import "./App.css";
 import { connect, sendMsg } from "./api";
 import Header from "./components/Header";
 import ChatHistory from './components/ChatHistory/ChatHistory';
+import Login from './components/Login/Login'; // Ensure this is the new Login component
+import Register from './components/Register/Register';
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            chatHistory: []
+            chatHistory: [],
+            isAuthenticated: false,
+            isRegistering: false,
+            token: '', // Store token here if needed
         };
     }
 
@@ -18,39 +23,43 @@ class App extends Component {
             this.setState(prevState => ({
                 chatHistory: [...prevState.chatHistory, msg]
             }));
-            console.log(this.state);
         });
-        fetch('http://localhost:8080/history')
-        .then(response => {
-          console.log(response); // Log the full response for debugging
-          if (!response.ok) {
-            throw new Error(`Network response was not ok, status: ${response.status}`);
-          }
-          const contentType = response.headers.get('Content-Type');
-          if (!contentType || !contentType.includes('application/json')) {
-            throw new Error(`Unexpected content type: ${contentType}`);
-          }
-          return response.json(); // Properly parse and return JSON data once
-        })
-            .then(history => {
-                // Here we set the state with the history received
-                this.setState({ chatHistory: history });
-                console.log("History fetched:", history);
-            })
-            .catch(error => console.error('Error fetching chat history:', error));
     }
 
-    send() {
-        console.log("hello");
-        sendMsg("hello");
-    }
+    // Adjusted to fit the new Login component
+    handleLoginSuccess = (token) => {
+        localStorage.setItem('token', token); // Store the token
+        this.setState({ isAuthenticated: true }, () => {
+            this.fetchChatHistory(); // Fetch chat history after successful login
+        });
+    };
+
+    fetchChatHistory = () => {
+        // Assuming the fetch URL and method are correct
+        fetch('http://localhost:8080/history')
+        .then(response => response.json())
+        .then(history => this.setState({ chatHistory: history }))
+        .catch(error => console.error('Error fetching chat history:', error));
+    };
 
     render() {
+        if (!this.state.isAuthenticated) {
+            if (this.state.isRegistering) {
+                return <Register onRegister={this.toggleRegister} />;
+            }
+            return (
+                <div>
+                    <Login onLoginSuccess={this.handleLoginSuccess} />
+                    <button onClick={this.toggleRegister}>Register</button>
+                </div>
+            );
+        }
+
         return (
             <div className="App">
                 <Header />
-                <ChatHistory chatHistory={this.state.chatHistory} /> {/* ChatHistory now receives the history as a prop */}
-                <button onClick={this.send}>Hit</button>
+                <ChatHistory chatHistory={this.state.chatHistory} />
+                <button onClick={() => sendMsg("hello")}>Hit</button>
             </div>
         );
     }

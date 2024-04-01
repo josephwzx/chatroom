@@ -1,0 +1,25 @@
+.register {
+    /* Your register styles */
+    .input-group {
+      margin-bottom: 15px;
+    }
+  
+    label {
+      display: block;
+    }
+  
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+  
+    button {
+      padding: 10px 20px;
+      background-color: #337ab7;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  }
+  

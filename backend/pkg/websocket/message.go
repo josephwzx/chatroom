@@ -35,7 +35,7 @@ func SaveMessage(message, sender string) error {
 func GetChatHistory() ([]Message, error) {
 	var history []Message
 
-	rows, err := Db.Query("SELECT id, content, sender, created_at FROM messages ORDER BY created_at DESC")
+	rows, err := Db.Query("SELECT id, content, sender, created_at FROM messages")
 	if err != nil {
 		log.Printf("Error retrieving chat history: %v", err)
 		return nil, err

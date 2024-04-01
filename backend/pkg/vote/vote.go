@@ -25,12 +25,12 @@ type Vote struct {
 	VoteType  string `json:"vote_type"`
 }
 
-func CastVote(v Vote) error {
+func CastVote(v Vote) (int, int, error) {
 	// Start a new transaction
 	tx, err := db.Begin()
 	if err != nil {
 		log.Println("Error starting transaction:", err)
-		return err
+		return 0, 0, err
 	}
 
 	// Lock the message row to prevent concurrent updates
@@ -39,7 +39,7 @@ func CastVote(v Vote) error {
 	if err != nil {
 		log.Printf("Error locking message row or row not found: %v", err)
 		tx.Rollback()
-		return err
+		return 0, 0, err
 	}
 
 	// Check for an existing vote by the user on the message
@@ -52,7 +52,7 @@ func CastVote(v Vote) error {
 		if err != nil {
 			log.Println("Error inserting vote:", err)
 			tx.Rollback()
-			return err
+			return 0, 0, err
 		}
 		// Adjust message counts based on the new vote
 		if v.VoteType == string(Upvote) {
@@ -66,7 +66,7 @@ func CastVote(v Vote) error {
 		if err != nil {
 			log.Println("Error updating existing vote:", err)
 			tx.Rollback()
-			return err
+			return 0, 0, err
 		}
 		// Correctly adjust message vote counts based on the vote change
 		if existingVoteType == string(Upvote) && v.VoteType == string(Downvote) {
@@ -79,7 +79,7 @@ func CastVote(v Vote) error {
 	} else if err != nil {
 		log.Println("Error querying existing vote:", err)
 		tx.Rollback()
-		return err
+		return 0, 0, err
 	}
 
 	// Finally, update the message's vote counts and version
@@ -87,15 +87,15 @@ func CastVote(v Vote) error {
 	if err != nil {
 		log.Printf("Error updating message vote count: %v", err)
 		tx.Rollback()
-		return err
+		return 0, 0, err
 	}
 
 	// Commit the transaction
 	if err := tx.Commit(); err != nil {
 		log.Printf("Error committing transaction: %v", err)
-		return err
+		return 0, 0, err
 	}
 
 	log.Println("Vote processed successfully.")
-	return nil
+	return upvoteCount, downvoteCount, nil
 }

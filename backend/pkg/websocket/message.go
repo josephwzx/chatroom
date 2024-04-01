@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 )
@@ -19,8 +20,8 @@ type Message struct {
 	Content       string    `json:"content"`
 	Sender        string    `json:"sender"`
 	CreatedAt     time.Time `json:"created_at"`
-	UpvoteCount   int       `json:"upvote_count"`
-	DownvoteCount int       `json:"downvote_count"`
+	UpvoteCount   int       `json:"upvotecount"`
+	DownvoteCount int       `json:"downvotecount"`
 }
 
 // SaveMessage stores a message in the database
@@ -53,6 +54,7 @@ func GetChatHistory() ([]Message, error) {
 			log.Printf("Error scanning message: %v", err)
 			return nil, err
 		}
+		fmt.Println(msg)
 		history = append(history, msg)
 	}
 

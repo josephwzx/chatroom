@@ -92,15 +92,21 @@ func voteHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Vote: %+v\n", v)
 
-	err = vote.CastVote(v)
+	var upvoteCount, downvoteCount int
+	upvoteCount, downvoteCount, err = vote.CastVote(v)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// to-be-modified
+	response := map[string]interface{}{
+		"message":        "Vote successfully recorded",
+		"upvote_count":   upvoteCount,
+		"downvote_count": downvoteCount,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Vote successfully recorded"})
+	json.NewEncoder(w).Encode(response)
 }
 
 func setupRoutes() {

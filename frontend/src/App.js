@@ -22,6 +22,7 @@ class App extends Component {
         connect((msg) => {
             const message = JSON.parse(msg.data);
             const formedMessage = {
+                id: message.id,
                 content: message.content,
                 sender: message.sender,
                 created_at: message.created_at,
@@ -57,7 +58,6 @@ class App extends Component {
     };
 
     fetchChatHistory = () => {
-        // Assuming the fetch URL and method are correct
         fetch('http://localhost:8080/history')
         .then(response => response.json())
         .then(history => this.setState({ chatHistory: history }))

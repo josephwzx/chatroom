@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/josephwzx/chatroom/pkg/auth"
+	"github.com/josephwzx/chatroom/pkg/vote"
 	"github.com/josephwzx/chatroom/pkg/websocket"
 	_ "github.com/lib/pq"
 )
@@ -29,6 +30,7 @@ func initDB() {
 
 	auth.InitializeAuth(db)
 	websocket.SetDatabaseConnection(db)
+	vote.SetDatabaseConnection(db)
 }
 
 func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
@@ -66,6 +68,41 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func voteHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	claims, err := auth.AuthenticateUser(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var v vote.Vote
+	err = json.NewDecoder(r.Body).Decode(&v)
+	if err != nil {
+		http.Error(w, "Error decoding JSON", http.StatusBadRequest)
+		return
+	}
+
+	var userID = claims.Username
+	v.UserID = userID
+
+	fmt.Printf("Vote: %+v\n", v)
+
+	err = vote.CastVote(v)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// to-be-modified
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Vote successfully recorded"})
+}
+
 func setupRoutes() {
 	pool := websocket.NewPool()
 	go pool.Start()
@@ -76,6 +113,7 @@ func setupRoutes() {
 
 	http.HandleFunc("/login", corsMiddleware(auth.LoginUser))
 	http.HandleFunc("/register", corsMiddleware(auth.RegisterUser))
+	http.HandleFunc("/vote", corsMiddleware(voteHandler))
 
 	http.HandleFunc("/history", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("/history endpoint hit")

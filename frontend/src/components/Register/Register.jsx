@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Header from '../Header';
 
 const Register = ({ onRegister }) => {
   const [username, setUsername] = useState('');
@@ -26,25 +27,36 @@ const Register = ({ onRegister }) => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Register</button>
-        {errorMessage && <p>{errorMessage}</p>}
-      </form>
+    <div className='app-container'>
+      <Header />
+        <div className='login'>
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="input-group">
+            <label htmlFor="username">Username:</label>
+            <input
+              id="username"
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="password">Password:</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit">Register</button>
+          {errorMessage && <p>{errorMessage}</p>}
+        </form>
+        </div>
     </div>
   );
 };

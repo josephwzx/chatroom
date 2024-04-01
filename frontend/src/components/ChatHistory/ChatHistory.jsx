@@ -4,7 +4,8 @@ import Message from "../Message";
 
 class ChatHistory extends Component {
     render() {
-        const messages = this.props.chatHistory.map((msg, index) => (
+        // Ensure chatHistory is an array before mapping. If it's null, default to an empty array
+        const messages = (this.props.chatHistory || []).map((msg, index) => (
             <Message key={index} message={msg} />
         ));
 

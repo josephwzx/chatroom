@@ -1,6 +1,9 @@
 package auth
 
 import (
+	"errors"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -40,4 +43,30 @@ func ValidateToken(tokenString string) (*Claims, bool) {
 		return nil, false
 	}
 	return claims, true
+}
+
+var (
+	ErrNoAuthToken            = errors.New("no authentication token provided")
+	ErrInvalidAuthTokenFormat = errors.New("invalid authentication token format")
+	ErrInvalidToken           = errors.New("invalid or expired token")
+)
+
+func AuthenticateUser(r *http.Request) (*Claims, error) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		return nil, ErrNoAuthToken // You should define this error
+	}
+
+	// Expecting "Bearer {token}" schema in Authorization header.
+	bearerToken := strings.Split(authHeader, " ")
+	if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
+		return nil, ErrInvalidAuthTokenFormat // You should define this error
+	}
+
+	claims, valid := ValidateToken(bearerToken[1])
+	if !valid {
+		return nil, ErrInvalidToken // You should define this error
+	}
+
+	return claims, nil
 }

@@ -45,8 +45,10 @@ func (c *Client) Read() {
 
 		fmt.Printf("Message Received: %+v\n", msg)
 
+		var id int64
 		// Now `msg` includes both the content and sender
-		err = SaveMessage(msg.Content, msg.Sender)
+		id, err = SaveMessage(msg.Content, msg.Sender)
+		msg.ID = id
 		if err != nil {
 			log.Printf("Error saving message: %v", err)
 			continue

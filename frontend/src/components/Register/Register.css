@@ -1,24 +1,50 @@
 .register {
-    .input-group {
-      margin-bottom: 15px;
-    }
-  
-    label {
-      display: block;
-    }
-  
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-    }
-  
-    button {
-      padding: 10px 20px;
-      background-color: #337ab7;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.register form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.register label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.register input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.register button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: block; 
+  margin: 20px auto; 
+  border-radius: 4px;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  width: 120px;
+}
+
+.register button:hover {
+  background-color: #0056b3; 
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}

@@ -36,3 +36,26 @@
 .content {
     font-size: 1em; /* Ensures content has a standard font size */
 }
+
+.vote-buttons {
+    display: flex; /* Use flexbox to align items */
+    margin-top: 10px;
+}
+
+.vote-button {
+    display: flex;
+    justify-content: center;
+    margin-right: 0px;
+    padding: 10px 15px;
+    font-size: 0.8em;
+    flex: 0 0 80px;
+}
+
+.vote-button.upvote {
+    margin-right: -420px; /* Specific to a button with the 'upvote' class */
+}
+
+.vote-button:hover {
+    background-color: #0056b3;
+    color: #ffffff; 
+}

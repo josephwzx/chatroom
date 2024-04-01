@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-var jwtKey = []byte("joseph-chatroom") // Replace with your secret key
+var jwtKey = []byte("joseph-chatroom")
 
 type Claims struct {
 	Username string `json:"username"`
@@ -54,18 +54,17 @@ var (
 func AuthenticateUser(r *http.Request) (*Claims, error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		return nil, ErrNoAuthToken // You should define this error
+		return nil, ErrNoAuthToken
 	}
 
-	// Expecting "Bearer {token}" schema in Authorization header.
 	bearerToken := strings.Split(authHeader, " ")
 	if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
-		return nil, ErrInvalidAuthTokenFormat // You should define this error
+		return nil, ErrInvalidAuthTokenFormat
 	}
 
 	claims, valid := ValidateToken(bearerToken[1])
 	if !valid {
-		return nil, ErrInvalidToken // You should define this error
+		return nil, ErrInvalidToken
 	}
 
 	return claims, nil

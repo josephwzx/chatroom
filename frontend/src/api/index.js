@@ -21,9 +21,13 @@ let connect = cb => {
     };
 };
 
-let sendMsg = msg => {
-    console.log("sending msg: ", msg);
-    socket.send(msg);
+let sendMsg = (msg, username) => {
+    const message = {
+        username: username,
+        message: msg
+    };
+    console.log("sending msg: ", message);
+    socket.send(JSON.stringify(message));
 };
 
 export { connect, sendMsg };

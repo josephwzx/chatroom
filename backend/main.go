@@ -48,16 +48,15 @@ func serveWs(pool *websocket.Pool, w http.ResponseWriter, r *http.Request) {
 }
 
 func enableCors(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*") // Adjust accordingly for security in production
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
 }
 
 func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Be more specific in production
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 
-		// Handle preflight requests
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
@@ -79,7 +78,7 @@ func setupRoutes() {
 	http.HandleFunc("/register", corsMiddleware(auth.RegisterUser))
 
 	http.HandleFunc("/history", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("/history endpoint hit") // Debug logging
+		log.Println("/history endpoint hit")
 		enableCors(&w)
 		history, err := websocket.GetChatHistory()
 		if err != nil {

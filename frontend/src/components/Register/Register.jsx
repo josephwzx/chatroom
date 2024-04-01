@@ -19,7 +19,7 @@ const Register = ({ onRegister }) => {
       if (!response.ok) {
         throw new Error('Registration failed');
       }
-      onRegister(); // Callback to switch to the login screen or directly log in the user
+      onRegister(); 
     } catch (error) {
       setErrorMessage(error.message);
     }
@@ -27,7 +27,6 @@ const Register = ({ onRegister }) => {
 
   return (
     <div>
-      <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="text"

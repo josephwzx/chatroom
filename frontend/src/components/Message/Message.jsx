@@ -3,13 +3,14 @@ import "./Message.css";
 
 class Message extends Component {
     render() {
-        // Assuming the message prop is now an object instead of a JSON string
         const { content, sender, created_at } = this.props.message;
         return (
             <div className="Message">
-                <p>{content}</p>
-                {sender && <p className="sender">Sender: {sender}</p>}
-                <p className="timestamp">Sent: {new Date(created_at).toLocaleString()}</p>
+                <div className="Message-header">
+                    {sender && <span className="sender"> {sender}</span>}
+                    <span className="timestamp">{new Date(created_at).toLocaleString()}</span>
+                </div>
+                <p className="content">{content}</p>
             </div>
         );
     }

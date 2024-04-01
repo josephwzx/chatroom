@@ -3,8 +3,9 @@ import "./App.css";
 import { connect, sendMsg } from "./api";
 import Header from "./components/Header";
 import ChatHistory from './components/ChatHistory/ChatHistory';
-import Login from './components/Login/Login'; // Ensure this is the new Login component
+import Login from './components/Login/Login';
 import Register from './components/Register/Register';
+import ChatInput from './components/Input/Input';
 
 class App extends Component {
     constructor(props) {
@@ -13,18 +14,39 @@ class App extends Component {
             chatHistory: [],
             isAuthenticated: false,
             isRegistering: false,
-            token: '', // Store token here if needed
+            token: '',
         };
     }
-
+    
     componentDidMount() {
         connect((msg) => {
-            console.log("New Message");
+            const message = JSON.parse(msg.data);
+            const formedMessage = {
+                content: message.content,
+                sender: message.sender,
+                created_at: message.created_at,
+            }
+            console.log("formed", formedMessage);
+
             this.setState(prevState => ({
-                chatHistory: [...prevState.chatHistory, msg]
-            }));
+                chatHistory: [...prevState.chatHistory, formedMessage]
+            }), this.scrollToBottom);
         });
     }
+
+    send(event) {
+        if(event.keyCode === 13) {
+            const username = localStorage.getItem('username');
+            sendMsg(event.target.value, username);
+            event.target.value = "";
+        }
+    }
+
+    toggleRegister = () => {
+        this.setState(prevState => ({
+            isRegistering: !prevState.isRegistering
+        }));
+    };   
 
     // Adjusted to fit the new Login component
     handleLoginSuccess = (token) => {
@@ -45,10 +67,12 @@ class App extends Component {
     render() {
         if (!this.state.isAuthenticated) {
             if (this.state.isRegistering) {
+                <Header />
                 return <Register onRegister={this.toggleRegister} />;
             }
             return (
                 <div>
+                    <Header />
                     <Login onLoginSuccess={this.handleLoginSuccess} />
                     <button onClick={this.toggleRegister}>Register</button>
                 </div>
@@ -58,8 +82,10 @@ class App extends Component {
         return (
             <div className="App">
                 <Header />
-                <ChatHistory chatHistory={this.state.chatHistory} />
-                <button onClick={() => sendMsg("hello")}>Hit</button>
+                <ChatHistory 
+                    chatHistory={this.state.chatHistory}
+                    />
+                <ChatInput send={this.send} />
             </div>
         );
     }

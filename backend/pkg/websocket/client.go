@@ -1,8 +1,10 @@
 package websocket
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -20,24 +22,37 @@ func (c *Client) Read() {
 	}()
 
 	for {
-		messageType, p, err := c.Conn.ReadMessage()
-		log.Printf("Message Type: %v", messageType)
+		_, p, err := c.Conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		// Assume Body of Message is type string. If it's not, you will need to adjust.
-		messageContent := string(p)
-		fmt.Printf("Message Received: %+v\n", messageContent)
 
-		// Save message to database, using the exported SaveMessage function
-		err = SaveMessage(messageContent, c.ID)
+		type TempMessage struct {
+			Username string `json:"username"`
+			Message  string `json:"message"`
+		}
+		var temp TempMessage
+		var msg Message
+		if err := json.Unmarshal(p, &temp); err != nil {
+			log.Println("Error unmarshalling message:", err)
+			continue
+		}
+		msg.Sender = temp.Username
+		msg.Content = temp.Message
+		// time is current
+		msg.CreatedAt = time.Now()
+
+		fmt.Printf("Message Received: %+v\n", msg)
+
+		// Now `msg` includes both the content and sender
+		err = SaveMessage(msg.Content, msg.Sender)
 		if err != nil {
-			log.Printf("Error saving message from client %v: %v", c.ID, err)
-			continue // Or handle the error as you see fit
+			log.Printf("Error saving message: %v", err)
+			continue
 		}
 
 		// Broadcast message to all clients in the pool
-		c.Pool.Broadcast <- Message{Content: messageContent}
+		c.Pool.Broadcast <- msg
 	}
 }

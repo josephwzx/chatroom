@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Login.css'; // Assuming your CSS is in this file
 
 const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
@@ -22,6 +23,8 @@ const Login = ({ onLoginSuccess }) => {
       }
 
       const data = await response.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('username', username);
       onLoginSuccess(data.token);
     } catch (error) {
       setErrorMessage(error.message);
@@ -29,26 +32,30 @@ const Login = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username:</label>
+    <div className="login">
+      <form onSubmit={handleSubmit} className="login-form">
+        <div className="input-group">
+          <label htmlFor="username">Username:</label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            className="form-input"
           />
         </div>
-        <div>
-          <label>Password:</label>
+        <div className="input-group">
+          <label htmlFor="password">Password:</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="form-input"
           />
         </div>
-        <button type="submit">Login</button>
-        {errorMessage && <p>{errorMessage}</p>}
+        <button type="submit" className="form-button">Login</button>
+        {errorMessage && <p className="error-message">{errorMessage}</p>}
       </form>
     </div>
   );

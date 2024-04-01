@@ -9,7 +9,7 @@ const Register = ({ onRegister }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch('http://localhost:8080/register', {
+      const response = await fetch('http://10.0.0.122:8088/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -44,7 +44,7 @@ class Message extends Component {
             vote_type: type === 'up' ? 'upvote' : 'downvote'
         };
         console.log(localStorage.getItem('token'))
-        fetch('http://localhost:8080/vote', {
+        fetch('http://10.0.0.122:8088/vote', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ class Message extends Component {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.json(); // You might send back the updated vote count from the server
+            return response.json(); 
         })
         .then(data => {
             this.setState({

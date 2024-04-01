@@ -49,16 +49,15 @@ class App extends Component {
         }));
     };   
 
-    // Adjusted to fit the new Login component
     handleLoginSuccess = (token) => {
-        localStorage.setItem('token', token); // Store the token
+        localStorage.setItem('token', token);
         this.setState({ isAuthenticated: true }, () => {
-            this.fetchChatHistory(); // Fetch chat history after successful login
+            this.fetchChatHistory(); 
         });
     };
 
     fetchChatHistory = () => {
-        fetch('http://localhost:8080/history')
+        fetch('http://10.0.0.122:8088/history')
         .then(response => response.json())
         .then(history => this.setState({ chatHistory: history }))
         .catch(error => console.error('Error fetching chat history:', error));
